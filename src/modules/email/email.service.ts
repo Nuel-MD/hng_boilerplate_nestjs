@@ -17,12 +17,13 @@ import { getFile, createFile, deleteFile } from '@shared/helpers/fileHelpers';
 export class EmailService {
   constructor(private readonly mailerService: QueueService) {}
 
-  async sendUserConfirmationMail(email: string, url: string, token: string) {
+  async sendUserConfirmationMail(email: string, name: string, url: string, token: string) {
     const link = `${url}?token=${token}`;
     const mailPayload: MailInterface = {
       to: email,
       context: {
         link,
+        name,
         email,
       },
     };
