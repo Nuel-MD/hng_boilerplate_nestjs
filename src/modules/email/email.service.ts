@@ -86,7 +86,7 @@ export class EmailService {
       to: email,
       context: {
         email,
-        token,
+        otp: token,
       },
     };
 

@@ -119,10 +119,11 @@ export default class EmailQueueConsumer {
       const {
         data: { mail },
       } = job;
+
       await this.mailerService.sendMail({
         ...mail,
         subject: 'In-App, Notification',
-        template: 'notification',
+        template: 'login-otp',
       });
       this.logger.log(`Notification email sent successfully to ${mail.to}`);
     } catch (sendLoginOtpEmailJobError) {
