@@ -12,4 +12,7 @@ export class Testimonial extends AbstractBaseEntity {
 
   @Column({ nullable: false })
   content: string;
+
+  @DeleteDateColumn()
+  deletedAt: Date;
 }
