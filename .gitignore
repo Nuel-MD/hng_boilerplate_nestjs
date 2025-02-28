@@ -388,8 +388,8 @@ Temporary Items
 
 =======
 # Local
-dist
-/.env
+dist/
+.env
 /.env.*
 *._local.ts
 
