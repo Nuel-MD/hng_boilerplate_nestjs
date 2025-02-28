@@ -422,3 +422,7 @@ data/
 docker-compose.yml
 data/
 >>>>>>> d080450 (chore: created a docker-compose.yml file and updated the gitignore)
+
+# Docker compose
+docker-compose.yml
+data/
