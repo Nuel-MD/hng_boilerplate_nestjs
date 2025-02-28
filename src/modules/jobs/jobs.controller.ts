@@ -110,7 +110,8 @@ export class JobsController {
   }
 
   @Patch('/:id')
-  @UseGuards(AuthGuard, JobOwnerGuard)
+  @UseGuards(AuthGuard)
+  @UseGuards(SuperAdminGuard, JobOwnerGuard)
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Update a job posting' })
   @ApiResponse({ status: 200, description: 'Job updated successfully' })

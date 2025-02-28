@@ -406,3 +406,4 @@ dist
 todo.txt
 .vscode/
 data/db/
+docker-compose.yml
