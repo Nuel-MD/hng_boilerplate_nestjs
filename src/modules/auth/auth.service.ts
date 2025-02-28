@@ -21,6 +21,7 @@ import { UpdateProfileDto } from '@modules/profile/dto/update-profile.dto';
 import { RequestSigninTokenDto } from './dto/request-signin-token.dto';
 import { OtpDto } from '@modules/otp/dto/otp.dto';
 import { DataSource, EntityManager } from 'typeorm';
+import { CreateOrganisationRecordOptions } from '@modules/organisations/dto/create-organisation-options';
 @Injectable()
 export default class AuthenticationService {
   constructor(
@@ -35,18 +36,17 @@ export default class AuthenticationService {
 
   async createNewUser(createUserDto: CreateUserDTO) {
     const result = await this.dataSource.transaction(async (manager: EntityManager) => {
-      const userExists = await this.userService.getUserRecord(
-        {
-          identifier: createUserDto.email,
-          identifierType: 'email',
-        },
-        manager
-      );
+      const userExists = await this.userService.getUserRecord({
+        identifier: createUserDto.email,
+        identifierType: 'email',
+      });
 
+      console.log('userExists', userExists);
       if (userExists) {
         throw new CustomHttpException(SYS_MSG.USER_ACCOUNT_EXIST, HttpStatus.BAD_REQUEST);
       }
 
+      console.log('createUserDto', createUserDto);
       const user = await this.userService.createUser(createUserDto, manager);
 
       if (!user) {
@@ -63,9 +63,19 @@ export default class AuthenticationService {
         state: '',
       };
 
-      const newOrganisation = await this.organisationService.create(newOrganisationPayload, user.id, manager);
+      const createOrganisationPayload: CreateOrganisationRecordOptions = {
+        createPayload: newOrganisationPayload,
+        dbTransaction: {
+          useTransaction: true,
+          transactionManager: manager,
+        },
+      };
 
-      const userOrganisations = await this.organisationService.getAllUserOrganisations(user.id, manager);
+      const newOrganisation = await this.organisationService.create(createOrganisationPayload);
+      console.log('newOrganisation', newOrganisation);
+
+      const userOrganisations = await this.organisationService.getAllUserOrganisations(user.id);
+      console.log('userOrganisations', userOrganisations);
 
       const isSuperAdmin = userOrganisations.map(instance => instance.user_role).includes('super-admin');
 
@@ -383,7 +393,13 @@ export default class AuthenticationService {
       state: '',
     };
 
-    await this.organisationService.create(newOrganisationPaload, newUser.id);
+    const createOrganisationPayload: CreateOrganisationRecordOptions = {
+      createPayload: newOrganisationPaload,
+      dbTransaction: {
+        useTransaction: false,
+      },
+    };
+    await this.organisationService.create(createOrganisationPayload);
 
     const userOranisations = await this.organisationService.getAllUserOrganisations(newUser.id);
     const isSuperAdmin = userOranisations.map(instance => instance.user_role).includes('super-admin');

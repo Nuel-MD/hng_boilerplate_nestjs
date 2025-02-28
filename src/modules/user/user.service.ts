@@ -79,30 +79,28 @@ export default class UserService {
     return this.userRepository.save(newUser);
   }
 
-  private async getUserByEmail(email: string, manager?: EntityManager) {
-    const repo = manager ? manager.getRepository(User) : this.userRepository;
-    const user: UserResponseDTO = await repo.findOne({
+  private async getUserByEmail(email: string) {
+    const user: UserResponseDTO = await this.userRepository.findOne({
       where: { email: email },
       relations: ['profile', 'owned_organisations'],
     });
     return user;
   }
 
-  private async getUserById(identifier: string, manager?: EntityManager) {
-    const repo = manager ? manager.getRepository(User) : this.userRepository;
-    const user: UserResponseDTO = await repo.findOne({
+  private async getUserById(identifier: string) {
+    const user: UserResponseDTO = await this.userRepository.findOne({
       where: { id: identifier },
       relations: ['profile', 'owned_organisations'],
     });
     return user;
   }
 
-  async getUserRecord(identifierOptions: UserIdentifierOptionsType, manager?: EntityManager) {
+  async getUserRecord(identifierOptions: UserIdentifierOptionsType) {
     const { identifier, identifierType } = identifierOptions;
 
     const GetRecord = {
-      id: async () => this.getUserById(String(identifier), manager),
-      email: async () => this.getUserByEmail(String(identifier), manager),
+      id: async () => this.getUserById(String(identifier)),
+      email: async () => this.getUserByEmail(String(identifier)),
     };
 
     return await GetRecord[identifierType]();

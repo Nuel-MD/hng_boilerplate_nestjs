@@ -12,7 +12,7 @@ import { Repository, EntityManager } from 'typeorm';
 import { UpdateOrganisationDto } from './dto/update-organisation.dto';
 import { Organisation } from './entities/organisations.entity';
 import { OrganisationMapper } from './mapper/organisation.mapper';
-import CreateOrganisationType from './dto/create-organisation-options';
+import CreateOrganisationType, { CreateOrganisationRecordOptions } from './dto/create-organisation-options';
 import { OrganisationMemberMapper } from './mapper/org-members.mapper';
 import { UpdateMemberRoleDto } from './dto/update-organisation-role.dto';
 import { AddMemberDto } from './dto/add-member.dto';
@@ -65,30 +65,41 @@ export class OrganisationsService {
     return { status_code: HttpStatus.OK, message: 'members retrieved successfully', data };
   }
 
-  async createOrganisation(createOrganisationDto: CreateOrganisationType, userId: string) {
-    const query = await this.create(createOrganisationDto, userId);
+  async createOrganisation(createOrganisationDto: CreateOrganisationType) {
+    const createPayload: CreateOrganisationRecordOptions = {
+      createPayload: createOrganisationDto,
+      dbTransaction: {
+        useTransaction: false,
+      },
+    };
+    const query = await this.create(createPayload);
     return { status_code: HttpStatus.CREATED, messge: 'Organisation created', data: query };
   }
 
-  async create(createOrganisationDto: CreateOrganisationType, userId: string, manager?: EntityManager) {
-    const userRepo = manager ? manager.getRepository(User) : this.userRepository;
-    const repo = manager ? manager.getRepository(Organisation) : this.organisationRepository;
-    const orgUserRoleRepo = manager ? manager.getRepository(OrganisationUserRole) : this.organisationUserRole;
-    if (createOrganisationDto.email) {
-      const emailFound = await this.emailExists(createOrganisationDto.email);
+  async create(createOrganisationDto: CreateOrganisationRecordOptions) {
+    const { createPayload, dbTransaction } = createOrganisationDto;
+
+    const repo = dbTransaction.useTransaction
+      ? dbTransaction.transactionManager.getRepository(Organisation)
+      : this.organisationRepository;
+    const orgUserRoleRepo = dbTransaction.useTransaction
+      ? dbTransaction.transactionManager.getRepository(OrganisationUserRole)
+      : this.organisationUserRole;
+    if (createPayload.email) {
+      const emailFound = await this.emailExists(createPayload.email);
       if (emailFound) throw new ConflictException('Organisation with this email already exists');
     }
 
-    const owner = await userRepo.findOne({
-      where: { id: userId },
+    const owner = await this.userRepository.findOne({
+      where: { id: createPayload.userId },
     });
 
-    const vendorRole = await (manager ? manager.getRepository(Role) : this.roleRepository).findOne({
+    const vendorRole = await this.roleRepository.findOne({
       where: { name: 'admin' },
     });
 
     const organisationInstance = new Organisation();
-    Object.assign(organisationInstance, createOrganisationDto);
+    Object.assign(organisationInstance, createPayload);
     organisationInstance.owner = owner;
     organisationInstance.members = [owner];
     const newOrganisation = await repo.save(organisationInstance);
@@ -153,13 +164,13 @@ export class OrganisationsService {
     };
   }
 
-  async getAllUserOrganisations(userId: string, manager?: EntityManager) {
-    const repo = manager ? manager.getRepository(User) : this.userRepository;
-    const user = await repo.findOne({ where: { id: userId } });
+  async getAllUserOrganisations(userId: string) {
+    const user = await this.userRepository.findOne({ where: { id: userId } });
 
     if (!user) {
-      throw new CustomHttpException('Invalid Request', HttpStatus.BAD_REQUEST);
+      return [];
     }
+
     const userOrganisations = (
       await this.organisationUserRole.find({
         where: { userId },
