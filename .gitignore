@@ -406,4 +406,9 @@ dist
 todo.txt
 .vscode/
 
+
 package-lock.json
+docker-compose.yml
+data/
+.dev.env
+
