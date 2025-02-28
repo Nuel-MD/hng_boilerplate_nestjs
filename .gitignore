@@ -407,3 +407,5 @@ todo.txt
 .vscode/
 data/db/
 docker-compose.yml
+package-lock.json
+.dev.env
