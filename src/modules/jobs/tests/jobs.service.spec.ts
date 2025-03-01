@@ -125,7 +125,7 @@ describe('JobsService', () => {
         {
           provide: S3Service,
           useValue: {
-            uploadResume: jest.fn().mockResolvedValue('https://s3-bucket-url/resume.pdf'),
+            uploadFile: jest.fn().mockResolvedValue('https://s3-bucket-url/resume.pdf'),
           },
         },
       ],
@@ -203,15 +203,11 @@ describe('JobsService', () => {
         new CustomHttpException('Job application deadline passed', HttpStatus.UNPROCESSABLE_ENTITY)
       );
     });
-
     it('should successfully create a job application with resume uploaded to S3', async () => {
       const resume = { buffer: Buffer.from('test file'), originalname: 'resume.pdf' } as Express.Multer.File;
-      jest.spyOn(service, 'getJob').mockResolvedValue({
-        data: { is_deleted: false, deadline: new Date(Date.now() - 1000 * 60 * 60 * 24).toISOString() }, // Expired deadline
-      } as any);
 
       jest.spyOn(service, 'getJob').mockResolvedValue(mockJob as any);
-      jest.spyOn(s3Service, 'uploadResume').mockResolvedValue('https://s3-bucket-url/resume.pdf');
+      jest.spyOn(s3Service, 'uploadFile').mockResolvedValue('https://s3-bucket-url/resume.pdf');
       (isPassed as jest.Mock).mockReturnValue(false);
 
       jest
@@ -224,7 +220,7 @@ describe('JobsService', () => {
       const result = await service.applyForJob('jobId', mockJobApplicationDto, resume);
 
       expect(result).toEqual(mockJobApplicationResponse);
-      expect(s3Service.uploadResume).toHaveBeenCalledWith(resume, mockJobApplicationDto.applicant_name);
+      expect(s3Service.uploadFile).toHaveBeenCalledWith(resume, 'resumes'); // ✅ Updated expectation
       expect(service['jobApplicationRepository'].create).toHaveBeenCalled();
       expect(service['jobApplicationRepository'].save).toHaveBeenCalled();
     });

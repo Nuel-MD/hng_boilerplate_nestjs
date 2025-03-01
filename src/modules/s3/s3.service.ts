@@ -18,8 +18,19 @@ export class S3Service {
     this.bucketName = this.configService.get<string>('AWS_S3_BUCKET_NAME');
   }
 
-  async uploadResume(file: Express.Multer.File, applicantName: string): Promise<string> {
-    const fileKey = `resumes/${applicantName.split(' ').join('_')}_${Date.now()}.pdf`;
+  /**
+   * Uploads a file to S3
+   * @param file - The file to upload
+   * @param folder - The folder in S3 where the file should be stored (e.g., 'resumes', 'images')
+   * @returns The file URL
+   */
+  async uploadFile(file: Express.Multer.File, folder: string): Promise<string> {
+    if (!file) {
+      throw new CustomHttpException('File is required', HttpStatus.BAD_REQUEST);
+    }
+
+    const fileExtension = file.originalname.split('.').pop();
+    const fileKey = `${folder}/${Date.now()}_${file.originalname}`;
 
     const uploadParams = {
       Bucket: this.bucketName,
@@ -32,7 +43,7 @@ export class S3Service {
       const { Location } = await this.s3.upload(uploadParams).promise();
       return Location;
     } catch (error) {
-      throw new CustomHttpException('Failed to upload resume', HttpStatus.INTERNAL_SERVER_ERROR);
+      throw new CustomHttpException('Failed to upload file', HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
 }

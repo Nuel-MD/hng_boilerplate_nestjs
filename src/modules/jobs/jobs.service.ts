@@ -46,7 +46,7 @@ export class JobsService {
 
     const { applicant_name, ...others } = jobApplicationDto;
 
-    const resumeUrl = await this.s3Service.uploadResume(resume, applicant_name);
+    const resumeUrl = await this.s3Service.uploadFile(resume, 'resumes');
 
     const createJobApplication = this.jobApplicationRepository.create({
       ...others,
