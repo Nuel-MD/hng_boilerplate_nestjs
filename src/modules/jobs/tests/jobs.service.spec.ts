@@ -33,11 +33,22 @@ describe('JobsService', () => {
       deadline: new Date(new Date().getTime() + 1000 * 60 * 60 * 24).toISOString(),
     },
   };
-
+  const mockFile: Express.Multer.File = {
+    fieldname: 'resume',
+    originalname: 'resume.pdf',
+    encoding: '7bit',
+    mimetype: 'application/pdf',
+    buffer: Buffer.from('mock file content'),
+    size: 1024,
+    destination: '',
+    filename: '',
+    path: '',
+    stream: null,
+  };
   const mockJobApplicationDto: JobApplicationDto = {
     applicant_name: 'John Doe',
     email: 'johndoe@example.com',
-    resume: 'resume content',
+    resume: mockFile,
     cover_letter: 'Cover letter text',
   };
 
@@ -46,8 +57,6 @@ describe('JobsService', () => {
     message: 'Application submitted successfully',
     status_code: HttpStatus.CREATED,
   };
-  console.log('isPassed:', isPassed);
-  console.log('isPassed is a function:', typeof isPassed === 'function');
 
   beforeEach(async () => {
     userDto = {

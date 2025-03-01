@@ -13,6 +13,7 @@ import {
   Patch,
   UseInterceptors,
   UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiConsumes,
@@ -69,6 +70,9 @@ export class JobsController {
     @Body() jobApplicationDto: JobApplicationDto,
     @UploadedFile() resume: Express.Multer.File
   ) {
+    if (!resume) {
+      throw new BadRequestException('Resume file is required');
+    }
     return this.jobService.applyForJob(id, jobApplicationDto, resume);
   }
 
