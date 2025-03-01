@@ -59,6 +59,7 @@ fabric.properties
 # DB
 data/db/
 
+docker-compose.yml
 # User-specific files
 *.suo
 *.user
