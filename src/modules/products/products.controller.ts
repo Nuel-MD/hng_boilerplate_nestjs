@@ -194,8 +194,6 @@ export class ProductsController {
     @CurrentUser() user: User, // Use the correct custom decorator
     @Body() dto: CreateReviewDto // Consistent DTO name
   ) {
-    console.log(productId);
-
     return this.productsService.submitReview(user.id, productId, dto);
   }
 

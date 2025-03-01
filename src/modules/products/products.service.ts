@@ -347,12 +347,10 @@ export class ProductsService {
   }
 
   async submitReview(userId: string, productId: string, dto: CreateReviewDto) {
-    console.log(productId);
     const product = await this.productRepository.findOne({
       where: { id: productId },
       relations: ['reviews'],
     });
-    console.log(product);
 
     if (!product) {
       throw new NotFoundException('Product not found');
