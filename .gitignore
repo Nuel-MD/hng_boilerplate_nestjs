@@ -399,4 +399,6 @@ dist
 *.staging
 *.dev
 *.prod
-
+# Docker Compose files
+docker-compose.yml
+docker-compose.override.yml
