@@ -41,12 +41,10 @@ export default class AuthenticationService {
         identifierType: 'email',
       });
 
-      console.log('userExists', userExists);
       if (userExists) {
         throw new CustomHttpException(SYS_MSG.USER_ACCOUNT_EXIST, HttpStatus.BAD_REQUEST);
       }
 
-      console.log('createUserDto', createUserDto);
       const user = await this.userService.createUser(createUserDto, manager);
 
       if (!user) {
@@ -140,7 +138,6 @@ export default class AuthenticationService {
     const exists = await this.userService.getUserRecord({ identifier: email, identifierType: 'email' });
     if (!exists) throw new CustomHttpException(SYS_MSG.USER_ACCOUNT_DOES_NOT_EXIST, HttpStatus.NOT_FOUND);
 
-    console.log(exists);
     const user = await this.otpService.retrieveUserAndOtp(exists.id, otp);
 
     // return this.userService.updateUser(user.id, { password: newPassword }, user);
